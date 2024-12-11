@@ -30,8 +30,6 @@ then
 	exit 1
 fi
 
-export AS_PYTHON_MANYLINUX=ON
-
 function repair_wheel {
     wheel="$1"
     if ! auditwheel show "$wheel"; then
@@ -57,7 +55,8 @@ build_wheel_for_python() {
     conda install pybind11 -y
 
     pip install -r ${REPO_ROOT}/python/requirements_dev_cpu.txt -i https://mirrors.aliyun.com/pypi/simple/
-    python ${REPO_ROOT}/python/setup.py bdist_wheel
+    ln -sf ${REPO_ROOT}/python/dashinfer .
+    # python ${REPO_ROOT}/python/setup.py bdist_wheel
     pip wheel ${REPO_ROOT}/python --no-deps -w ${REPO_ROOT}/python/wheelhouse/ --log wheel_log.txt
 
     conda deactivate
@@ -69,7 +68,7 @@ build_wheel_for_python() {
 mkdir -p ${REPO_ROOT}/python/wheelhouse/
 
 for python_version in $BUILD_VERSION; do
-    build_wheel_for_python ${python_version}  2>&1 | tee whl_build_log_py${python_version//.}.txt
+    build_wheel_for_python ${python_version}  2>&1 | tee wheel_build_log_py${python_version//.}.txt
 done
 
 

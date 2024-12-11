@@ -33,7 +33,7 @@ target_link_libraries(_allspark PRIVATE
    allspark_framework_static
    CONAN_PKG::protobuf
    CONAN_PKG::zlib)
-set_target_properties(_allspark PROPERTIES INSTALL_RPATH "$ORIGIN")
+set_target_properties(_allspark PROPERTIES INSTALL_RPATH "$ORIGIN:$ORIGIN/${CMAKE_INSTALL_LIBDIR}")
 set_target_properties(_allspark PROPERTIES CXX_STANDARD 17)
 if(UNIX AND NOT APPLE)
   set(ALLSPARK_LINK_MAP ${PROJECT_SOURCE_DIR}/link_python.map)

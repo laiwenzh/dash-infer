@@ -19,8 +19,7 @@ add_executable(
   example_qwen 0_basic/example_qwen.cpp tokenizer/tokenizer.cpp
                            tokenizer/base64.cpp)
 
-target_link_libraries(example_qwen PRIVATE allspark_framework
-                                                       )
+target_link_libraries(example_qwen PRIVATE allspark_framework)
 
 target_include_directories(example_qwen PRIVATE tokenizer utils)
 
