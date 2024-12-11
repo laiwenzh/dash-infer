@@ -1,9 +1,11 @@
 name: Release Packages
 
-on:
- push:
-   tags:
-     - 'v[0-9]+.[0-9]+.[0-9]+'
+# on:
+#  push:
+#    tags:
+#      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+on: workflow_dispatch
 
 # Needed to create release and upload assets
 permissions:
@@ -13,15 +15,8 @@ jobs:
   build-tgz:
     strategy:
       matrix:
-        arch: [X64, ARM64, CUDA]
-        image: ["dev-centos7-x86:v2", "dev-centos8-arm:v2, dev-centos7-cu124:v1_py310"]
-        exclude:
-          - arch: X64
-            image: "dev-centos8-arm:v2"
-          - arch: ARM64
-            image: "dev-centos7-x86:v2"
-          - arch: CUDA
-            image: "dev-centos7-cu124:v1_py310"
+        arch: [X64]
+        image: ["dev-centos7-x86:v2"]
     runs-on: [self-hosted, Linux, "${{ matrix.arch }}"]
     container:
       image: registry-1.docker.io/dashinfer/${{ matrix.image }}
@@ -29,12 +24,14 @@ jobs:
       # force use node16 instead of node20
       # otherwise it may cause GLIBCXX_2.27 not found
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      # ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
+      # ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION: node16
     defaults:
       run:
         shell: bash -l {0}
     steps:
     - name: Check out code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
       with:
         lfs: true
         
@@ -45,24 +42,22 @@ jobs:
     - name: Build tgz package
       run: |
         git fetch --tags
-        TAG_NAME=$(git describe --tags $(git rev-list --tags --max-count=1))
-        VERSION_NUMBER=$(echo "$TAG_NAME" | sed 's/^v//')
-        # source /opt/rh/devtoolset-7/enable
-        # source activate ds_py
-        source ~/.bashrc
+        # TAG_NAME=$(git describe --tags $(git rev-list --tags --max-count=1))
+        VERSION_NUMBER=2.0.0 # $(echo "$TAG_NAME" | sed 's/^v//')
+        source /opt/rh/devtoolset-7/enable
+        source activate ds_py
 
-        if [[ "${{ matrix.arch }}" == "X64" ]]; then
-            export AS_PLATFORM="x86"
-            export ENABLE_MULTINUMA="ON"
-        elif [[ "${{ matrix.arch }}" == "ARM64" ]]; then
-            export AS_PLATFORM="armclang"
-            export ENABLE_MULTINUMA="ON"
-        elif [[ "${{ matrix.arch }}" == "CUDA" ]]; then
+        if command -v nvcc &> /dev/null
+        then
             export AS_PLATFORM="cuda"
             export AS_CUDA_SM="'70;75;80;86;89;90a'"
         else
-            echo "Unsupported architecture: ${{ matrix.arch }}"
-            exit 1
+            export ENABLE_MULTINUMA="ON"
+            if [[ "${{ matrix.arch }}" == "ARM64" ]]; then
+                export AS_PLATFORM="armclang"
+            else
+                export AS_PLATFORM="x86"
+            fi
         fi
 
         export AS_RELEASE_VERSION=$VERSION_NUMBER
