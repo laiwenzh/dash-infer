@@ -1,1 +1,0 @@
-aone_ci-arm-unittest-dev_image.sh

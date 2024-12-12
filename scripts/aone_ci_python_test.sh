@@ -1,1 +1,0 @@
-aone_ci-cuda-python-test-dev_image.sh

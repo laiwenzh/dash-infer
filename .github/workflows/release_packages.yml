@@ -15,8 +15,13 @@ jobs:
   build-tgz:
     strategy:
       matrix:
-        arch: [X64]
-        image: ["dev-centos7-x86:v2"]
+        arch: [X64, ARM64]
+        image: ["dev-centos7-x86:v2", "dev-centos8-arm:v2"]
+        exclude:
+          - arch: X64
+            image: "dev-centos8-arm:v2"
+          - arch: ARM64
+            image: "dev-centos7-x86:v2"
     runs-on: [self-hosted, Linux, "${{ matrix.arch }}"]
     container:
       image: registry-1.docker.io/dashinfer/${{ matrix.image }}
@@ -31,19 +36,20 @@ jobs:
         shell: bash -l {0}
     steps:
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         lfs: true
         
     - name: Pull LFS
       run: |
+        git lfs install
         git lfs pull
         
     - name: Build tgz package
       run: |
         git fetch --tags
-        # TAG_NAME=$(git describe --tags $(git rev-list --tags --max-count=1))
-        VERSION_NUMBER=2.0.0 # $(echo "$TAG_NAME" | sed 's/^v//')
+        TAG_NAME=$(git describe --tags $(git rev-list --tags --max-count=1))
+        VERSION_NUMBER=$(echo "$TAG_NAME" | sed 's/^v//')
         source /opt/rh/devtoolset-7/enable
         source activate ds_py
 
@@ -52,7 +58,7 @@ jobs:
             export AS_PLATFORM="cuda"
             export AS_CUDA_SM="'70;75;80;86;89;90a'"
         else
-            export ENABLE_MULTINUMA="ON"
+            # export ENABLE_MULTINUMA="ON"
             if [[ "${{ matrix.arch }}" == "ARM64" ]]; then
                 export AS_PLATFORM="armclang"
             else
@@ -145,7 +151,7 @@ jobs:
     needs: [build-tgz]
     strategy:
       matrix:
-        arch: [X64, ARM64, CUDA]
+        arch: [X64, ARM64]
     steps:
     # - name: Download deb packages
     #   uses: actions/download-artifact@v3

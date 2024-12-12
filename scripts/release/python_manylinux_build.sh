@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e -x
 
-ALL_VERSION="3.8 3.9 3.10 3.11"
+# ALL_VERSION="3.8 3.9 3.10 3.11"
+ALL_VERSION="3.10"
 BUILD_VERSION=${@:-$ALL_VERSION}
 
 echo " going to build python wheels with version: ${BUILD_VERSION}"
@@ -19,9 +20,11 @@ architecture=$(arch)
 if [ "${architecture}" == "aarch64" ]; then
     export PLAT=manylinux_2_28_aarch64
     export AS_PLATFORM=armclang
+    # export ENABLE_MULTINUMA="ON"
 else
     export PLAT=manylinux2014_x86_64
     export AS_PLATFORM=x86
+    # export ENABLE_MULTINUMA="ON"
 fi
 
 if [ -z "$PLAT" ] || [ -z "$AS_PLATFORM" ];
