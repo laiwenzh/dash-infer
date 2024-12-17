@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e -x
 
-ALL_VERSION="3.8 3.9 3.10 3.11"
+# ALL_VERSION="3.8 3.9 3.10 3.11"
+ALL_VERSION="3.10"
 BUILD_VERSION=${@:-$ALL_VERSION}
 
 echo " going to build python wheels with version: ${BUILD_VERSION}"

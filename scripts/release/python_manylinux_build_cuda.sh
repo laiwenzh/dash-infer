@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e -x
 
-ALL_VERSION="3.8 3.9 3.10 3.11"
+# ALL_VERSION="3.8 3.9 3.10 3.11"
+ALL_VERSION="3.10"
 BUILD_VERSION=${@:-$ALL_VERSION}
 CUDA_VERSION=$(nvcc --version | grep -oP 'release \K[\d.]+')
 
@@ -36,7 +37,8 @@ function repair_wheel {
         echo "Skipping non-platform wheel $wheel"
     else
         # TODO: add lib path to build lib path
-        auditwheel repair "$wheel" --plat "$PLAT" -w ${REPO_ROOT}/python/wheelhouse/
+        auditwheel repair "$wheel" --plat "$PLAT" -w ${REPO_ROOT}/python/wheelhouse/ --exclude libcublas.so.12 --exclude libcublasLt.so.12 --exclude libcudart.so.12 --exclude libcusparse.so.12 --exclude libnvJitLink.so.12 --exclude libcuda.so.1 --exclude libnccl.so.2 --exclude libnvidia-ml.so.1 --exclude libcudart.so.12
+
     fi
 }
 
